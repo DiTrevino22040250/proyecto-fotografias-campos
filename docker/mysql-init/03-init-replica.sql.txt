@@ -1,0 +1,3 @@
+CREATE DATABASE IF NOT EXISTS fotografias_campos CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+CREATE DATABASE IF NOT EXISTS estado_pedidos CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+CREATE DATABASE IF NOT EXISTS replica_pedidos CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;

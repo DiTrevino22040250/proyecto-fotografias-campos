@@ -1,0 +1,19 @@
+# .NET
+**/bin/
+**/obj/
+**/*.user
+**/.vs/
+
+# Node
+**/node_modules/
+**/dist/
+
+# Entorno
+.env
+**/.env
+
+# Docker
+**/.dockerignore
+
+# Logs
+**/*.log
