@@ -3,38 +3,36 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { ScheduleModule } from '@nestjs/schedule';
 
-// Entidades (Domain)
 import { Pedido } from './domain/entities/pedido.entity';
 import { Usuario } from './domain/entities/usuario.entity';
 
-// Puertos (Domain/Ports)
 import { PEDIDO_SERVICE_PORT } from './domain/ports/in/pedido-service.port';
 import { PEDIDO_REPOSITORY_PORT } from './domain/ports/out/pedido-repository.port';
 import { EMAIL_PORT } from './domain/ports/out/email.port';
 
-// Servicios (Application)
 import { PedidoService } from './application/services/pedido.service';
 import { AuthService } from './application/services/auth.service';
 
-// Adaptadores (Infrastructure)
 import { PedidoRepository } from './infrastructure/adapters/out/persistence/pedido.repository';
 import { EmailAdapter } from './infrastructure/adapters/out/email/email.adapter';
 import { PedidoController } from './infrastructure/adapters/in/pedido.controller';
 import { AuthController } from './infrastructure/adapters/in/auth.controller';
+import { CronController } from './infrastructure/adapters/in/cron.controller';
 
-// Seguridad (Infrastructure)
 import { JwtService } from './infrastructure/security/jwt.service';
 import { JwtStrategy } from './infrastructure/security/jwt.strategy';
 import { RateLimitMiddleware } from './infrastructure/middleware/rate-limit.middleware';
 import { SanitizationMiddleware } from './infrastructure/middleware/sanitization.middleware';
+import { SecurityLoggingMiddleware } from './infrastructure/middleware/security-logging.middleware';
+import { EmailCronService } from './infrastructure/tasks/email-cron.service';
 
 @Module({
   imports: [
-    // Carga de variables de entorno (.env)
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
 
-    // Conexión a Base de Datos MySQL (XAMPP)
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -46,12 +44,11 @@ import { SanitizationMiddleware } from './infrastructure/middleware/sanitization
         password: config.get<string>('DB_PASS', ''),
         database: config.get<string>('DB_NAME', 'estado_pedidos'),
         entities: [Pedido, Usuario],
-        synchronize: true, // Crea tablas automáticamente
+        synchronize: true,
       }),
     }),
     TypeOrmModule.forFeature([Pedido, Usuario]),
 
-    // Configuración de JWT
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -61,7 +58,6 @@ import { SanitizationMiddleware } from './infrastructure/middleware/sanitization
       }),
     }),
 
-    // Configuración de Gmail
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -78,22 +74,26 @@ import { SanitizationMiddleware } from './infrastructure/middleware/sanitization
       }),
     }),
   ],
-  controllers: [AuthController, PedidoController],
+  controllers: [AuthController, PedidoController, CronController],
   providers: [
     AuthService,
     JwtService,
     JwtStrategy,
-    // Inyección de dependencias mapeando Puertos a Clases
+    EmailCronService,
+    // Registramos el repositorio para que PedidoRepository esté disponible por su clase
+    PedidoRepository,
+    // Registramos EmailAdapter directamente para que EmailCronService lo encuentre
+    EmailAdapter, 
+    // Mantenemos los ports para la arquitectura hexagonal
     { provide: PEDIDO_SERVICE_PORT, useClass: PedidoService },
     { provide: PEDIDO_REPOSITORY_PORT, useClass: PedidoRepository },
     { provide: EMAIL_PORT, useClass: EmailAdapter },
   ],
 })
 export class AppModule implements NestModule {
-  // Aplicar Middlewares de Seguridad Globalmente
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(RateLimitMiddleware, SanitizationMiddleware)
+      .apply(RateLimitMiddleware, SanitizationMiddleware, SecurityLoggingMiddleware)
       .forRoutes('*');
   }
 }

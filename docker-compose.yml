@@ -111,6 +111,7 @@ services:
       - Jwt__Audience=FotografiasCamposClientes
       - Jwt__ExpiresInMinutes=60
       - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_ENVIRONMENT=Development
     ports:
       - "5000:8080"
     depends_on:
@@ -122,7 +123,7 @@ services:
   # ─── API 2 (NestJS) ─────────────────────────────────────────────
   api2:
     build:
-      context: ./estadoPedidos.api/estado-pedidos-api
+      context: ./estadoPedidos.api
       dockerfile: Dockerfile
     container_name: api2
     restart: always
