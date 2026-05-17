@@ -13,6 +13,17 @@ export class PedidoService implements PedidoServicePort {
     private readonly emailAdapter: EmailPort,
   ) {}
 
+  async crearPedido(data: any, user: any): Promise<Pedido> {
+    return this.repo.create({
+        pedidoExternoId: data.pedidoExternoId,
+        nombreCliente: data.nombreCliente,
+        emailCliente: data.emailCliente,
+        tipoServicio: data.tipoServicio,
+        usuarioUsername: data.usuarioUsername || user.username,
+        estado: EstadoPedido.EN_CURSO
+    });
+}
+
   async obtenerTodos(username: string, rol: string): Promise<Pedido[]> {
     if (rol === 'admin') return this.repo.findAll();
     return this.repo.findByUsername(username);

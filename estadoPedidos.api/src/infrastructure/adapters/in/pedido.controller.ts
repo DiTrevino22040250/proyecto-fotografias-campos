@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Body, Param, UseGuards, Req, ParseIntPipe, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, UseGuards, Req, ParseIntPipe, Inject } from '@nestjs/common';
 import { type PedidoServicePort, PEDIDO_SERVICE_PORT } from '../../../domain/ports/in/pedido-service.port';
 import { UpdateEstadoDto } from '../../../application/dtos/update-estado.dto';
 import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
@@ -10,6 +10,11 @@ export class PedidoController {
     @Inject(PEDIDO_SERVICE_PORT) 
     private readonly pedidoService: PedidoServicePort
   ) {}
+
+  @Post()
+  async crear(@Body() body: any, @Req() req) {
+    return await this.pedidoService.crearPedido(body, req.user);
+}
 
   @Get()
   async findAll(@Req() req) {

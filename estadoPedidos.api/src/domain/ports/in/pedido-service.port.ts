@@ -1,6 +1,7 @@
 import { EstadoPedido, Pedido } from '../../entities/pedido.entity';
 
 export interface PedidoServicePort {
+  crearPedido(data: any, user: any): Promise<Pedido>;
   obtenerTodos(username: string, rol: string): Promise<Pedido[]>;
   obtenerPorId(id: number, username: string, rol: string): Promise<Pedido>;
   actualizarEstado(id: number, nuevoEstado: EstadoPedido, user: any): Promise<Pedido>;

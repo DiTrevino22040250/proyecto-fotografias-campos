@@ -2,13 +2,12 @@ version: '3.8'
 
 services:
 
-  # ─── BASE DE DATOS 1 (Master - API 1) ───────────────────────────
   db1:
     image: mysql:8.0
     container_name: db1
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: fotografias_campos
     ports:
       - "3307:3306"
@@ -23,18 +22,17 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-prootpassword"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 10
 
-  # ─── BASE DE DATOS 2 (Master - API 2) ───────────────────────────
   db2:
     image: mysql:8.0
     container_name: db2
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: estado_pedidos
     ports:
       - "3308:3306"
@@ -49,18 +47,17 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-prootpassword"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 10
 
-  # ─── BASE DE DATOS RÉPLICA (Slave - API 3) ──────────────────────
   db_replica:
     image: mysql:8.0
     container_name: db_replica
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
       - "3309:3306"
     volumes:
@@ -78,12 +75,11 @@ services:
       db2:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-prootpassword"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 10
 
-  # ─── SETUP REPLICACIÓN ──────────────────────────────────────────
   replica-setup:
     image: mysql:8.0
     container_name: replica-setup
@@ -97,7 +93,6 @@ services:
       - app-network
     restart: "no"
 
-  # ─── API 1 (.NET) ───────────────────────────────────────────────
   api1:
     build:
       context: ./fotografiasCampos.api
@@ -105,10 +100,10 @@ services:
     container_name: api1
     restart: always
     environment:
-      - ConnectionStrings__DefaultConnection=Server=db1;Port=3306;Database=fotografias_campos;User=root;Password=rootpassword;
-      - Jwt__Key=ClaveSecretaSuperSegura1234567890!
-      - Jwt__Issuer=FotografiasCamposApi
-      - Jwt__Audience=FotografiasCamposClientes
+      - ConnectionStrings__DefaultConnection=${API1_DB_CONNECTION}
+      - Jwt__Key=${JWT_KEY}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
       - Jwt__ExpiresInMinutes=60
       - ASPNETCORE_URLS=http://+:8080
       - ASPNETCORE_ENVIRONMENT=Development
@@ -120,7 +115,6 @@ services:
     networks:
       - app-network
 
-  # ─── API 2 (NestJS) ─────────────────────────────────────────────
   api2:
     build:
       context: ./estadoPedidos.api
@@ -128,14 +122,14 @@ services:
     container_name: api2
     restart: always
     environment:
-      - DB_HOST=db2
-      - DB_PORT=3306
-      - DB_USER=root
-      - DB_PASS=rootpassword
-      - DB_NAME=estado_pedidos
-      - JWT_SECRET=ClaveSecretaSuperSegura1234567890!
-      - EMAIL_USER=tucorreo@gmail.com
-      - EMAIL_PASS=tucontraseña
+      - DB_HOST=${API2_DB_HOST}
+      - DB_PORT=${API2_DB_PORT}
+      - DB_USER=${API2_DB_USER}
+      - DB_PASS=${API2_DB_PASS}
+      - DB_NAME=${API2_DB_NAME}
+      - JWT_SECRET=${API2_JWT_SECRET}
+      - EMAIL_USER=${API2_EMAIL_USER}
+      - EMAIL_PASS=${API2_EMAIL_PASS}
       - PORT=3001
     ports:
       - "3001:3001"
@@ -145,7 +139,6 @@ services:
     networks:
       - app-network
 
-  # ─── API 3 (Query .NET) ─────────────────────────────────────────
   api3:
     build:
       context: ./QueryApi
@@ -153,10 +146,10 @@ services:
     container_name: api3
     restart: always
     environment:
-      - ConnectionStrings__ReplicaConnection=Server=db_replica;Port=3306;Database=replica_pedidos;User=root;Password=rootpassword;
-      - Jwt__Key=ClaveSecretaSuperSegura1234567890!
-      - Jwt__Issuer=FotografiasCamposApi
-      - Jwt__Audience=FotografiasCamposClientes
+      - ConnectionStrings__ReplicaConnection=${API3_REPLICA_CONNECTION}
+      - Jwt__Key=${JWT_KEY}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
       - ASPNETCORE_URLS=http://+:8080
     ports:
       - "5001:8080"
@@ -166,7 +159,6 @@ services:
     networks:
       - app-network
 
-  # ─── PROXY NGINX ────────────────────────────────────────────────
   proxy:
     image: nginx:alpine
     container_name: proxy
