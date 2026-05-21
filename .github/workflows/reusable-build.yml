@@ -1,0 +1,49 @@
+name: Reusable Build and Verify
+
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        required: true
+        type: string
+      dockerfile_path:
+        required: true
+        type: string
+      context_path:
+        required: true
+        type: string
+      port:
+        required: true
+        type: string
+    secrets:
+      MYSQL_ROOT_PASSWORD:
+        required: true
+      JWT_KEY:
+        required: true
+      JWT_ISSUER:
+        required: true
+      JWT_AUDIENCE:
+        required: true
+      API2_EMAIL_USER:
+        required: false
+      API2_EMAIL_PASS:
+        required: false
+
+jobs:
+  build-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Construir imagen Docker
+        run: |
+          docker build \
+            -f ${{ inputs.dockerfile_path }} \
+            -t ${{ inputs.service_name }}:test \
+            ${{ inputs.context_path }}
+
+      - name: Verificar que la imagen se construyó
+        run: |
+          docker images | grep ${{ inputs.service_name }}
+          echo "✅ Imagen ${{ inputs.service_name }} construida correctamente"

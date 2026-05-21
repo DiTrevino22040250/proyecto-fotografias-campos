@@ -1,0 +1,52 @@
+name: API 3 - Query .NET Build and Verify
+
+on:
+  workflow_call:
+    secrets:
+      MYSQL_ROOT_PASSWORD:
+        required: true
+      JWT_KEY:
+        required: true
+      JWT_ISSUER:
+        required: true
+      JWT_AUDIENCE:
+        required: true
+
+jobs:
+  build-api3:
+    uses: ./.github/workflows/reusable-build.yml
+    with:
+      service_name: api3
+      dockerfile_path: ./QueryApi/Dockerfile
+      context_path: ./QueryApi
+      port: "5001"
+    secrets:
+      MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+      JWT_KEY: ${{ secrets.JWT_KEY }}
+      JWT_ISSUER: ${{ secrets.JWT_ISSUER }}
+      JWT_AUDIENCE: ${{ secrets.JWT_AUDIENCE }}
+
+  test-api3:
+    runs-on: ubuntu-latest
+    needs: build-api3
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restaurar dependencias
+        run: |
+          cd QueryApi
+          dotnet restore
+
+      - name: Build API 3
+        run: |
+          cd QueryApi
+          dotnet build --no-restore
+
+      - name: ✅ API 3 verificada
+        run: echo "✅ API 3 (Query .NET) build exitoso"

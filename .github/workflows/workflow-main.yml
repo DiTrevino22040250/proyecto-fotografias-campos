@@ -1,0 +1,65 @@
+name: 🚀 Pipeline Principal - Fotografías Campos
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # ─── VERIFICAR BASES DE DATOS ───────────────────────────────────
+  databases:
+    name: 🗄️ Verificar Bases de Datos
+    uses: ./.github/workflows/workflow-databases.yml
+    secrets:
+      MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+
+  # ─── BUILD API 1 ────────────────────────────────────────────────
+  api1:
+    name: 🔵 API 1 .NET
+    uses: ./.github/workflows/workflow-api1.yml
+    secrets:
+      MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+      JWT_KEY: ${{ secrets.JWT_KEY }}
+      JWT_ISSUER: ${{ secrets.JWT_ISSUER }}
+      JWT_AUDIENCE: ${{ secrets.JWT_AUDIENCE }}
+
+  # ─── BUILD API 2 ────────────────────────────────────────────────
+  api2:
+    name: 🟢 API 2 NestJS
+    uses: ./.github/workflows/workflow-api2.yml
+    secrets:
+      MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+      JWT_KEY: ${{ secrets.JWT_KEY }}
+      JWT_ISSUER: ${{ secrets.JWT_ISSUER }}
+      JWT_AUDIENCE: ${{ secrets.JWT_AUDIENCE }}
+      API2_EMAIL_USER: ${{ secrets.API2_EMAIL_USER }}
+      API2_EMAIL_PASS: ${{ secrets.API2_EMAIL_PASS }}
+
+  # ─── BUILD API 3 ────────────────────────────────────────────────
+  api3:
+    name: 🟡 API 3 Query .NET
+    uses: ./.github/workflows/workflow-api3.yml
+    secrets:
+      MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+      JWT_KEY: ${{ secrets.JWT_KEY }}
+      JWT_ISSUER: ${{ secrets.JWT_ISSUER }}
+      JWT_AUDIENCE: ${{ secrets.JWT_AUDIENCE }}
+
+  # ─── RESUMEN FINAL ──────────────────────────────────────────────
+  summary:
+    name: 📋 Resumen del Pipeline
+    runs-on: ubuntu-latest
+    needs: [databases, api1, api2, api3]
+    steps:
+      - name: ✅ Pipeline completado
+        run: |
+          echo "=================================="
+          echo "✅ Bases de datos verificadas"
+          echo "✅ API 1 (.NET) build exitoso"
+          echo "✅ API 2 (NestJS) build exitoso"
+          echo "✅ API 3 (Query .NET) build exitoso"
+          echo "=================================="
+          echo "🚀 Sistema Fotografías Campos listo"

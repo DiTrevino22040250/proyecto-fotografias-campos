@@ -24,7 +24,7 @@ export class EmailCronService {
   ) {}
 
   // Ejecuta cada 30 minutos
-  @Cron('0 */30 * * * *')
+  @Cron('0 * * * * *')  //'0 */30 * * * *' 30 minutos
   async verificarPedidosListos() {
     // Si el cron fue desactivado por vulneración, no ejecutar
     if (!this.cronActivo) {
