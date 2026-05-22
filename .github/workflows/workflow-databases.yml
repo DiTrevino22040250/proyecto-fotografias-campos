@@ -13,12 +13,12 @@ jobs:
       db1:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          MYSQL_ROOT_PASSWORD: rootpassword
           MYSQL_DATABASE: fotografias_campos
         ports:
           - 3307:3306
         options: >-
-          --health-cmd="mysqladmin ping -h localhost -p$MYSQL_ROOT_PASSWORD"
+          --health-cmd="mysqladmin ping -h localhost -prootpassword"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
@@ -26,12 +26,12 @@ jobs:
       db2:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          MYSQL_ROOT_PASSWORD: rootpassword
           MYSQL_DATABASE: estado_pedidos
         ports:
           - 3308:3306
         options: >-
-          --health-cmd="mysqladmin ping -h localhost -p$MYSQL_ROOT_PASSWORD"
+          --health-cmd="mysqladmin ping -h localhost -prootpassword"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
@@ -39,11 +39,11 @@ jobs:
       db_replica:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          MYSQL_ROOT_PASSWORD: rootpassword
         ports:
           - 3309:3306
         options: >-
-          --health-cmd="mysqladmin ping -h localhost -p$MYSQL_ROOT_PASSWORD"
+          --health-cmd="mysqladmin ping -h localhost -prootpassword"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
@@ -53,22 +53,16 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Verificar db1
-        env:
-          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
         run: |
-          mysql -h 127.0.0.1 -P 3307 -uroot -p$MYSQL_ROOT_PASSWORD -e "SHOW DATABASES;"
+          mysql -h 127.0.0.1 -P 3307 -uroot -prootpassword -e "SHOW DATABASES;"
           echo "✅ DB1 lista"
 
       - name: Verificar db2
-        env:
-          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
         run: |
-          mysql -h 127.0.0.1 -P 3308 -uroot -p$MYSQL_ROOT_PASSWORD -e "SHOW DATABASES;"
+          mysql -h 127.0.0.1 -P 3308 -uroot -prootpassword -e "SHOW DATABASES;"
           echo "✅ DB2 lista"
 
       - name: Verificar db_replica
-        env:
-          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
         run: |
-          mysql -h 127.0.0.1 -P 3309 -uroot -p$MYSQL_ROOT_PASSWORD -e "SHOW DATABASES;"
+          mysql -h 127.0.0.1 -P 3309 -uroot -prootpassword -e "SHOW DATABASES;"
           echo "✅ DB Réplica lista"
