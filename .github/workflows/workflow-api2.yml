@@ -46,12 +46,12 @@ jobs:
 
       - name: Instalar dependencias
         run: |
-          cd estadoPedidos.api/estado-pedidos-api
+          cd estadoPedidos.api
           npm install
 
       - name: Build API 2
         run: |
-          cd estadoPedidos.api/estado-pedidos-api
+          cd estadoPedidos.api
           npm run build
 
       - name: ✅ API 2 verificada
