@@ -54,6 +54,49 @@ jobs:
     runs-on: ubuntu-latest
     needs: [databases, api1, api2, api3]
     steps:
+      - name: Descargar todos los artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: todos-los-artifacts
+
+      - name: Generar reporte final
+        run: |
+          mkdir -p reporte-final
+          echo "================================================" > reporte-final/reporte-completo.txt
+          echo "🚀 SISTEMA FOTOGRAFÍAS CAMPOS" >> reporte-final/reporte-completo.txt
+          echo "Fecha de ejecución: $(date)" >> reporte-final/reporte-completo.txt
+          echo "================================================" >> reporte-final/reporte-completo.txt
+          echo "" >> reporte-final/reporte-completo.txt
+
+          echo "=== BASES DE DATOS ===" >> reporte-final/reporte-completo.txt
+          cat todos-los-artifacts/docker-info-databases/databases-info.txt >> reporte-final/reporte-completo.txt
+          echo "" >> reporte-final/reporte-completo.txt
+
+          echo "=== API 1 (.NET) ===" >> reporte-final/reporte-completo.txt
+          cat todos-los-artifacts/docker-info-api1/api1-info.txt >> reporte-final/reporte-completo.txt
+          echo "" >> reporte-final/reporte-completo.txt
+
+          echo "=== API 2 (NestJS) ===" >> reporte-final/reporte-completo.txt
+          cat todos-los-artifacts/docker-info-api2/api2-info.txt >> reporte-final/reporte-completo.txt
+          echo "" >> reporte-final/reporte-completo.txt
+
+          echo "=== API 3 (Query .NET) ===" >> reporte-final/reporte-completo.txt
+          cat todos-los-artifacts/docker-info-api3/api3-info.txt >> reporte-final/reporte-completo.txt
+          echo "" >> reporte-final/reporte-completo.txt
+
+          echo "================================================" >> reporte-final/reporte-completo.txt
+          echo "✅ TODOS LOS SERVICIOS VERIFICADOS CORRECTAMENTE" >> reporte-final/reporte-completo.txt
+          echo "================================================" >> reporte-final/reporte-completo.txt
+
+          cat reporte-final/reporte-completo.txt
+
+      - name: Subir reporte final
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte-final-sistema
+          path: reporte-final/reporte-completo.txt
+          retention-days: 30
+
       - name: ✅ Pipeline completado
         run: |
           echo "=================================="

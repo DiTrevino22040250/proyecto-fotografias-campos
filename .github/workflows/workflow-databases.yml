@@ -52,17 +52,33 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v4
 
-      - name: Verificar db1
+      - name: Verificar bases de datos y guardar info
         run: |
-          mysql -h 127.0.0.1 -P 3307 -uroot -prootpassword -e "SHOW DATABASES;"
-          echo "✅ DB1 lista"
+          mkdir -p docker-info
 
-      - name: Verificar db2
-        run: |
-          mysql -h 127.0.0.1 -P 3308 -uroot -prootpassword -e "SHOW DATABASES;"
-          echo "✅ DB2 lista"
+          echo "=== BASES DE DATOS ===" > docker-info/databases-info.txt
+          echo "Fecha: $(date)" >> docker-info/databases-info.txt
+          echo "" >> docker-info/databases-info.txt
 
-      - name: Verificar db_replica
-        run: |
-          mysql -h 127.0.0.1 -P 3309 -uroot -prootpassword -e "SHOW DATABASES;"
-          echo "✅ DB Réplica lista"
+          echo "--- DB1 (fotografias_campos) ---" >> docker-info/databases-info.txt
+          mysql -h 127.0.0.1 -P 3307 -uroot -prootpassword -e "SHOW DATABASES;" >> docker-info/databases-info.txt
+          echo "✅ DB1 lista" >> docker-info/databases-info.txt
+          echo "" >> docker-info/databases-info.txt
+
+          echo "--- DB2 (estado_pedidos) ---" >> docker-info/databases-info.txt
+          mysql -h 127.0.0.1 -P 3308 -uroot -prootpassword -e "SHOW DATABASES;" >> docker-info/databases-info.txt
+          echo "✅ DB2 lista" >> docker-info/databases-info.txt
+          echo "" >> docker-info/databases-info.txt
+
+          echo "--- DB_REPLICA ---" >> docker-info/databases-info.txt
+          mysql -h 127.0.0.1 -P 3309 -uroot -prootpassword -e "SHOW DATABASES;" >> docker-info/databases-info.txt
+          echo "✅ DB Réplica lista" >> docker-info/databases-info.txt
+
+          cat docker-info/databases-info.txt
+
+      - name: Subir artifact con información de bases de datos
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-info-databases
+          path: docker-info/databases-info.txt
+          retention-days: 30

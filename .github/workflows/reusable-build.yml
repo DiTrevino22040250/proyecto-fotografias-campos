@@ -43,7 +43,29 @@ jobs:
             -t ${{ inputs.service_name }}:test \
             ${{ inputs.context_path }}
 
-      - name: Verificar que la imagen se construyó
+      - name: Guardar información del contenedor
+        run: |
+          mkdir -p docker-info
+          echo "=== INFORMACIÓN DEL CONTENEDOR ${{ inputs.service_name }} ===" > docker-info/${{ inputs.service_name }}-info.txt
+          echo "Fecha: $(date)" >> docker-info/${{ inputs.service_name }}-info.txt
+          echo "Puerto: ${{ inputs.port }}" >> docker-info/${{ inputs.service_name }}-info.txt
+          echo "Dockerfile: ${{ inputs.dockerfile_path }}" >> docker-info/${{ inputs.service_name }}-info.txt
+          echo "Contexto: ${{ inputs.context_path }}" >> docker-info/${{ inputs.service_name }}-info.txt
+          echo "" >> docker-info/${{ inputs.service_name }}-info.txt
+          echo "=== IMAGEN DOCKER ===" >> docker-info/${{ inputs.service_name }}-info.txt
+          docker images ${{ inputs.service_name }}:test >> docker-info/${{ inputs.service_name }}-info.txt
+          echo "" >> docker-info/${{ inputs.service_name }}-info.txt
+          echo "=== DETALLES DE LA IMAGEN ===" >> docker-info/${{ inputs.service_name }}-info.txt
+          docker inspect ${{ inputs.service_name }}:test >> docker-info/${{ inputs.service_name }}-info.txt
+
+      - name: Subir artifact con información del contenedor
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-info-${{ inputs.service_name }}
+          path: docker-info/${{ inputs.service_name }}-info.txt
+          retention-days: 30
+
+      - name: ✅ Imagen verificada
         run: |
           docker images | grep ${{ inputs.service_name }}
           echo "✅ Imagen ${{ inputs.service_name }} construida correctamente"
