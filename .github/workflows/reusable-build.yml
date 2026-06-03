@@ -48,9 +48,12 @@ jobs:
           mkdir -p docker-info
           echo "=== INFORMACIÓN DEL CONTENEDOR ${{ inputs.service_name }} ===" > docker-info/${{ inputs.service_name }}-info.txt
           echo "Fecha: $(date)" >> docker-info/${{ inputs.service_name }}-info.txt
-          echo "Puerto: ${{ inputs.port }}" >> docker-info/${{ inputs.service_name }}-info.txt
-          echo "Dockerfile: ${{ inputs.dockerfile_path }}" >> docker-info/${{ inputs.service_name }}-info.txt
-          echo "Contexto: ${{ inputs.context_path }}" >> docker-info/${{ inputs.service_name }}-info.txt
+          echo "" >> docker-info/${{ inputs.service_name }}-info.txt
+          echo "=== RUTAS DE EJECUCIÓN ===" >> docker-info/${{ inputs.service_name }}-info.txt
+          echo "Ruta de ejecución: $(pwd)" >> docker-info/${{ inputs.service_name }}-info.txt
+          echo "Ruta del Dockerfile: $(pwd)/${{ inputs.dockerfile_path }}" >> docker-info/${{ inputs.service_name }}-info.txt
+          echo "Ruta del contexto: $(pwd)/${{ inputs.context_path }}" >> docker-info/${{ inputs.service_name }}-info.txt
+          echo "Puerto expuesto: ${{ inputs.port }}" >> docker-info/${{ inputs.service_name }}-info.txt
           echo "" >> docker-info/${{ inputs.service_name }}-info.txt
           echo "=== IMAGEN DOCKER ===" >> docker-info/${{ inputs.service_name }}-info.txt
           docker images ${{ inputs.service_name }}:test >> docker-info/${{ inputs.service_name }}-info.txt
@@ -69,3 +72,4 @@ jobs:
         run: |
           docker images | grep ${{ inputs.service_name }}
           echo "✅ Imagen ${{ inputs.service_name }} construida correctamente"
+          echo "✅ Ruta: $(pwd)/${{ inputs.context_path }}"
